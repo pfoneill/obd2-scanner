@@ -207,6 +207,19 @@ def sample_voltage_for_phase(
         time.sleep(interval_s)
 
 
+def read_vin(connection: obd.OBD) -> str:
+    """Read VIN from ECU when available."""
+    try:
+        response = connection.query(obd.commands.VIN)
+    except Exception:
+        return "UNAVAILABLE"
+
+    if response is None or response.is_null() or response.value is None:
+        return "UNAVAILABLE"
+
+    return str(response.value)
+
+
 def main() -> int:
     """Guide a battery voltage test and write readings to CSV."""
     args = parse_args()
@@ -255,6 +268,10 @@ def main() -> int:
             log_event(writer, test_start, "setup", "connection_failed", message=str(status))
             print(f"CSV saved to: {output_path.resolve()}")
             return 1
+
+        vin = read_vin(connection)
+        print(f"VIN: {vin}")
+        log_event(writer, test_start, "setup", "vin_read", message=vin)
 
         print("Connected. Logging with engine OFF...")
         log_event(
