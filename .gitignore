@@ -4,3 +4,6 @@
 
 # python bytecode caches
 __pycache__/
+
+# diagnostic report output
+output/
